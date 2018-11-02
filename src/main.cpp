@@ -15,8 +15,9 @@ void setup() {
   Serial.println("");
   Serial.println("start");
 
-  int present = ether.begin(mac);
-  Serial.println("foo");
+  ether.setDefault();
+  //int present = ether.begin(mac);
+  int present = ether.begin();
   Serial.println("present= " + String(present, HEX));
 
   while (!ether.connected()) {
