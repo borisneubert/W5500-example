@@ -46,6 +46,7 @@ String mqttMsg;
 void callback(char* topic, byte* payload, unsigned int length) {
   Serial.println("MQTT incomming subcribe: ");
   mqttMsg = topic;
+  mqttMsg += " - ";
   for (int i = 0; i < length; i++) {
     mqttMsg += (char)payload[i];
   }
@@ -58,14 +59,14 @@ void reconnect() {
     Serial.print("Attempting MQTT connection...");
     // Create a random client ID
     String clientId = "ESP8266Client-";
-    clientId += String(random(0xffff), HEX);
+    //clientId += String(random(0xffff), HEX);
     // Attempt to connect
     if (client.connect(clientId.c_str())) {
       Serial.println("connected");
       // Once connected, publish an announcement...
-      client.publish("outTopic", "hello world");
+      client.publish("outTopic/start", "Hello World");
       // ... and resubscribe
-      client.subscribe("inTopic");
+      client.subscribe("inTopic/#");
     } else {
       Serial.print("failed, rc=");
       Serial.print(client.state());
@@ -73,6 +74,19 @@ void reconnect() {
       // Wait 5 seconds before retrying
       delay(5000);
     }
+  /*
+   -4 : MQTT_CONNECTION_TIMEOUT - the server didn't respond within the keepalive time
+   -3 : MQTT_CONNECTION_LOST - the network connection was broken
+   -2 : MQTT_CONNECT_FAILED - the network connection failed
+   -1 : MQTT_DISCONNECTED - the client is disconnected cleanly
+    0 : MQTT_CONNECTED - the client is connected
+    1 : MQTT_CONNECT_BAD_PROTOCOL - the server doesn't support the requested version of MQTT
+    2 : MQTT_CONNECT_BAD_CLIENT_ID - the server rejected the client identifier
+    3 : MQTT_CONNECT_UNAVAILABLE - the server was unable to accept the connection
+    4 : MQTT_CONNECT_BAD_CREDENTIALS - the username/password were rejected
+    5 : MQTT_CONNECT_UNAUTHORIZED - the client was not authorized to connect
+  */
+
   }
 }
 //####################################################
@@ -111,6 +125,7 @@ void setup() {
   }
 
 // starting ethernet
+/*
   Serial.println("starting ethernet...");
   eth.setDefault(); // use ethernet for default route
   int present = eth.begin();// eth.begin(mac);
@@ -128,7 +143,7 @@ void setup() {
     Serial.print("ethernet ip address: ");
     Serial.println(eth.localIP());
   }
-
+*/
 // starting web server
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
     String htmlStr = "";
@@ -140,14 +155,17 @@ void setup() {
     htmlStr += "<BODY>";
     htmlStr += "d-a-v WiFi/ETH";
     htmlStr += "<br />";
-    htmlStr += "WiFi IP:";
+    htmlStr += "WiFi IP: ";
     htmlStr += WiFi.localIP().toString();
     htmlStr += "<br />";
     htmlStr += "ETH IP: ";
     htmlStr += eth.localIP().toString();
     htmlStr += "<br />";
-    htmlStr += "Time:   ";
+    htmlStr += "Time: ";
     htmlStr += ntpClient.getFormattedTime();
+    htmlStr += "<br />";
+    htmlStr += "MQTT: ";
+    htmlStr += mqttMsg;
     htmlStr += "<br />";
     htmlStr += "</BODY>";
     htmlStr += "</HTML>";
