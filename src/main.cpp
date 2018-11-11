@@ -11,7 +11,7 @@ const char *password = "Pf@nneNETwlan_ACCESS";
 #include <w5500-lwIP.h>
 #define CSPIN 4
 Wiznet5500lwIP eth(CSPIN);
-byte mac[] = {0x00, 0x08, 0xDC, 0x12, 0x34, 0x56};
+byte mac[] = {0x00, 0x00, 0x00, 0x00, 0x00, 0xAA};
 
 //....................................................
 // asynchronous web server
@@ -55,14 +55,19 @@ void callback(char* topic, byte* payload, unsigned int length) {
 // mqtt reconnect
 void reconnect() {
   // Loop until we're reconnected
-  while (!client.connected()) {
+
+  //int i = 0;
+  //while (!client.connected()) {
+    //i++;
     Serial.print("Attempting MQTT connection...");
     // Create a random client ID
     String clientId = "ESP8266Client-";
     //clientId += String(random(0xffff), HEX);
     // Attempt to connect
+    eth.loop();
     if (client.connect(clientId.c_str())) {
-      Serial.println("connected");
+      eth.loop();
+    Serial.println("connected");
       // Once connected, publish an announcement...
       client.publish("outTopic/start", "Hello World");
       // ... and resubscribe
@@ -72,7 +77,8 @@ void reconnect() {
       Serial.print(client.state());
       Serial.println(" try again in 5 seconds");
       // Wait 5 seconds before retrying
-      delay(5000);
+      //delay(1000);
+      //if (i>5) break;
     }
   /*
    -4 : MQTT_CONNECTION_TIMEOUT - the server didn't respond within the keepalive time
@@ -87,7 +93,7 @@ void reconnect() {
     5 : MQTT_CONNECT_UNAUTHORIZED - the client was not authorized to connect
   */
 
-  }
+  //}
 }
 //####################################################
 // setup
@@ -101,6 +107,8 @@ void setup() {
   Serial.println("starting example...");
 
 // starting wifi
+//WiFi.mode(WIFI_OFF);
+
   Serial.println("starting wifi...");
   WiFi.mode(WIFI_STA);
   //WiFi.mode(WIFI_OFF);
@@ -125,10 +133,12 @@ void setup() {
   }
 
 // starting ethernet
+
+// enable Ethernet here-------------------
 /*
   Serial.println("starting ethernet...");
   eth.setDefault(); // use ethernet for default route
-  int present = eth.begin();// eth.begin(mac);
+  int present = eth.begin(mac);// eth.begin(mac);
   if (!present) {
     Serial.println("no W5500 present");
     //return;
@@ -179,8 +189,11 @@ void setup() {
 
 // starting mqtt client
   client.setServer(mqtt_server, 1883);
+  eth.loop();
   client.setCallback(callback);
+  eth.loop();
   client.subscribe("inTopic");
+  eth.loop();
 
 // ready
   Serial.println("setup complete");
@@ -191,13 +204,17 @@ void setup() {
 //####################################################
 void loop() {
   eth.loop();
-
-  if (!client.connected()) reconnect();
   client.loop();
+  eth.loop();
 
   ntpClient.update();
+  eth.loop();
   t = ntpClient.getEpochTime();
   if (t != t0) {
+    eth.loop();
+    if (!client.connected()) reconnect();
+    eth.loop();
+
     Serial.println(ntpClient.getFormattedTime());
     Serial.print("wifi ip address: ");
     Serial.println(WiFi.localIP());
@@ -205,6 +222,8 @@ void loop() {
     Serial.println(eth.localIP());
     t0 = t;
 
+    eth.loop();
     client.publish("outTopic", ntpClient.getFormattedTime().c_str());
+    eth.loop();
   }
 }
