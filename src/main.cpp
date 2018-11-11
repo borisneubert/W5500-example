@@ -134,6 +134,8 @@ void setup() {
 
 // starting ethernet
 
+// enable Ethernet here-------------------
+/*
   Serial.println("starting ethernet...");
   eth.setDefault(); // use ethernet for default route
   int present = eth.begin(mac);// eth.begin(mac);
@@ -151,7 +153,7 @@ void setup() {
     Serial.print("ethernet ip address: ");
     Serial.println(eth.localIP());
   }
-
+*/
 // starting web server
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
     String htmlStr = "";
@@ -210,7 +212,7 @@ void loop() {
   t = ntpClient.getEpochTime();
   if (t != t0) {
     eth.loop();
-    //if (!client.connected()) reconnect();
+    if (!client.connected()) reconnect();
     eth.loop();
 
     Serial.println(ntpClient.getFormattedTime());
