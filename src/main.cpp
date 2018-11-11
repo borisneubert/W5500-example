@@ -3,8 +3,8 @@
 //....................................................
 // WiFi
 #include "ESP8266WiFi.h"
-const char *ssid = "Pf@nne-NET";
-const char *password = "Pf@nneNETwlan_ACCESS";
+const char *ssid = "mySSID";
+const char *password = "myPass";
 
 //....................................................
 // W5500,  Arduino Pin 4 = Wemos Pin D2
