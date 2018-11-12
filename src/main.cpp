@@ -3,8 +3,8 @@
 //....................................................
 // WiFi
 #include "ESP8266WiFi.h"
-const char *ssid = "Pf@nne-NET";
-const char *password = "Pf@nneNETwlan_ACCESS";
+const char *ssid = "****";
+const char *password = "****";
 
 //....................................................
 // W5500,  Arduino Pin 4 = Wemos Pin D2
@@ -202,11 +202,11 @@ void setup() {
 
 // starting mqtt client
   client.setServer(mqtt_server, 1883);
-  eth.loop();
+  //eth.loop();
   client.setCallback(callback);
-  eth.loop();
+  //eth.loop();
   client.subscribe("inTopic");
-  eth.loop();
+  //eth.loop();
 
 // ready
   Serial.println("setup complete");
@@ -216,17 +216,17 @@ void setup() {
 // loop
 //####################################################
 void loop() {
-  eth.loop();
+  //eth.loop();
   client.loop();
-  eth.loop();
+  //eth.loop();
 
   ntpClient.update();
-  eth.loop();
+  //eth.loop();
   t = ntpClient.getEpochTime();
   if (t != t0) {
-    eth.loop();
+    //eth.loop();
     if (!client.connected()) reconnect();
-    eth.loop();
+    //eth.loop();
 
     Serial.println(ntpClient.getFormattedTime());
     Serial.print("wifi ip address: ");
@@ -247,8 +247,8 @@ void loop() {
 
     t0 = t;
 
-    eth.loop();
+    //eth.loop();
     client.publish("outTopic", ntpClient.getFormattedTime().c_str());
-    eth.loop();
+    //eth.loop();
   }
 }
