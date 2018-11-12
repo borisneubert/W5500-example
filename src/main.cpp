@@ -3,8 +3,8 @@
 //....................................................
 // WiFi
 #include "ESP8266WiFi.h"
-const char *ssid = "mySSID";
-const char *password = "myPass";
+const char *ssid = "Pf@nne-NET";
+const char *password = "Pf@nneNETwlan_ACCESS";
 
 //....................................................
 // W5500,  Arduino Pin 4 = Wemos Pin D2
@@ -95,6 +95,19 @@ void reconnect() {
 
   //}
 }
+
+extern "C" void eth_loop (){
+    // first, check if ethernet is initialized,
+    // then call your eth.loop()
+    Serial.println("eth.connected()");
+    eth.loop();
+
+  if (eth.connected()){
+    Serial.println("eth.connected()");
+    eth.loop();
+  }
+
+}
 //####################################################
 // setup
 //####################################################
@@ -135,7 +148,7 @@ void setup() {
 // starting ethernet
 
 // enable Ethernet here-------------------
-/*
+
   Serial.println("starting ethernet...");
   eth.setDefault(); // use ethernet for default route
   int present = eth.begin(mac);// eth.begin(mac);
@@ -153,7 +166,7 @@ void setup() {
     Serial.print("ethernet ip address: ");
     Serial.println(eth.localIP());
   }
-*/
+
 // starting web server
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
     String htmlStr = "";
@@ -220,6 +233,18 @@ void loop() {
     Serial.println(WiFi.localIP());
     Serial.print("ethernet ip address: ");
     Serial.println(eth.localIP());
+
+    Serial.print("Version: ");
+    Serial.println(eth.version(), HEX);
+    Serial.print("phyStatus: ");
+    Serial.println(eth.phyStatus(), BIN);
+
+
+    for (size_t i = 0; i < 8; i++) {
+      Serial.print("Socket: " + String(i) + " - ");
+      Serial.println(eth.socketMode(i), HEX);
+    }
+
     t0 = t;
 
     eth.loop();
