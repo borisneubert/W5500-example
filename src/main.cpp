@@ -3,15 +3,20 @@
 //....................................................
 // WiFi
 #include "ESP8266WiFi.h"
-const char *ssid = "****";
-const char *password = "****";
+const char *ssid = "xxx";
+const char *password = "xxx";
 
 //....................................................
 // W5500,  Arduino Pin 4 = Wemos Pin D2
 #include <w5500-lwIP.h>
 #define CSPIN 4
 Wiznet5500lwIP eth(CSPIN);
+int present = 0;
 byte mac[] = {0x00, 0x00, 0x00, 0x00, 0x00, 0xAA};
+
+#include <osapi.h>
+LOCAL os_timer_t eth_timer;
+int led= 0;
 
 //....................................................
 // asynchronous web server
@@ -69,7 +74,7 @@ void reconnect() {
       eth.loop();
     Serial.println("connected");
       // Once connected, publish an announcement...
-      client.publish("outTopic/start", "Hello World");
+      client.publish("outTopic/start", "Hello from W5500!");
       // ... and resubscribe
       client.subscribe("inTopic/#");
     } else {
@@ -96,18 +101,13 @@ void reconnect() {
   //}
 }
 
-extern "C" void eth_loop (){
-    // first, check if ethernet is initialized,
-    // then call your eth.loop()
-    Serial.println("eth.connected()");
-    eth.loop();
-
-  if (eth.connected()){
-    Serial.println("eth.connected()");
-    eth.loop();
-  }
-
+//....................................................
+void ICACHE_RAM_ATTR eth_loop(void){
+  digitalWrite(LED_BUILTIN, led);
+  led= 1-led;
+  if(present) eth.loop();
 }
+
 //####################################################
 // setup
 //####################################################
@@ -120,8 +120,6 @@ void setup() {
   Serial.println("starting example...");
 
 // starting wifi
-//WiFi.mode(WIFI_OFF);
-
   Serial.println("starting wifi...");
   WiFi.mode(WIFI_STA);
   //WiFi.mode(WIFI_OFF);
@@ -134,10 +132,8 @@ void setup() {
      if (i>20) break;
   }
   Serial.println("");
-  //if (WiFi.waitForConnectResult() != WL_CONNECTED) {
   if (i>20) {
     Serial.println("wifi connection failed");
-    //return;
   } else {
     Serial.print("wifi ip address: ");
     Serial.println(WiFi.localIP());
@@ -146,12 +142,16 @@ void setup() {
   }
 
 // starting ethernet
-
 // enable Ethernet here-------------------
+  pinMode(LED_BUILTIN, OUTPUT);
 
   Serial.println("starting ethernet...");
+  os_timer_disarm(&eth_timer);
+  os_timer_setfn(&eth_timer, (os_timer_func_t *)eth_loop, NULL);
+  os_timer_arm(&eth_timer, 1, 1);
+
   eth.setDefault(); // use ethernet for default route
-  int present = eth.begin(mac);// eth.begin(mac);
+  present = eth.begin();// eth.begin(mac);
   if (!present) {
     Serial.println("no W5500 present");
     //return;
@@ -216,17 +216,12 @@ void setup() {
 // loop
 //####################################################
 void loop() {
-  //eth.loop();
   client.loop();
-  //eth.loop();
-
   ntpClient.update();
-  //eth.loop();
+
   t = ntpClient.getEpochTime();
   if (t != t0) {
-    //eth.loop();
     if (!client.connected()) reconnect();
-    //eth.loop();
 
     Serial.println(ntpClient.getFormattedTime());
     Serial.print("wifi ip address: ");
@@ -234,21 +229,7 @@ void loop() {
     Serial.print("ethernet ip address: ");
     Serial.println(eth.localIP());
 
-    Serial.print("Version: ");
-    Serial.println(eth.version(), HEX);
-    Serial.print("phyStatus: ");
-    Serial.println(eth.phyStatus(), BIN);
-
-
-    for (size_t i = 0; i < 8; i++) {
-      Serial.print("Socket: " + String(i) + " - ");
-      Serial.println(eth.socketMode(i), HEX);
-    }
-
-    t0 = t;
-
-    //eth.loop();
     client.publish("outTopic", ntpClient.getFormattedTime().c_str());
-    //eth.loop();
+    t0 = t;
   }
 }
