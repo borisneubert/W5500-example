@@ -59,31 +59,16 @@ void callback(char* topic, byte* payload, unsigned int length) {
 }
 // mqtt reconnect
 void reconnect() {
-  // Loop until we're reconnected
-
-  //int i = 0;
-  //while (!client.connected()) {
-    //i++;
     Serial.print("Attempting MQTT connection...");
-    // Create a random client ID
     String clientId = "ESP8266Client-";
-    //clientId += String(random(0xffff), HEX);
-    // Attempt to connect
-    eth.loop();
     if (client.connect(clientId.c_str())) {
-      eth.loop();
     Serial.println("connected");
-      // Once connected, publish an announcement...
       client.publish("outTopic/start", "Hello from W5500!");
-      // ... and resubscribe
       client.subscribe("inTopic/#");
     } else {
       Serial.print("failed, rc=");
       Serial.print(client.state());
       Serial.println(" try again in 5 seconds");
-      // Wait 5 seconds before retrying
-      //delay(1000);
-      //if (i>5) break;
     }
   /*
    -4 : MQTT_CONNECTION_TIMEOUT - the server didn't respond within the keepalive time
@@ -97,8 +82,6 @@ void reconnect() {
     4 : MQTT_CONNECT_BAD_CREDENTIALS - the username/password were rejected
     5 : MQTT_CONNECT_UNAUTHORIZED - the client was not authorized to connect
   */
-
-  //}
 }
 
 //....................................................
@@ -202,11 +185,8 @@ void setup() {
 
 // starting mqtt client
   client.setServer(mqtt_server, 1883);
-  //eth.loop();
   client.setCallback(callback);
-  //eth.loop();
   client.subscribe("inTopic");
-  //eth.loop();
 
 // ready
   Serial.println("setup complete");
