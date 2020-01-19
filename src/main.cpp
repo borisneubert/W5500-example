@@ -25,7 +25,7 @@ int led = 0;
 // asynchronous web server
 #include <ESPAsyncTCP.h>
 #include <ESPAsyncWebServer.h>
-AsyncWebServer erver(80);
+AsyncWebServer server(80);
 
 //....................................................
 // ntp client
